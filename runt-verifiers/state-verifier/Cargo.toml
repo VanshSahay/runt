@@ -1,0 +1,12 @@
+[package]
+name = "state-verifier"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "EIP-1186 state proof verifier WASM module for Runt"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+runt-abi = { path = "../../runt-abi" }
