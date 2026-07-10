@@ -5,6 +5,7 @@ members = [
     "runt-core",
     "runt-host",
     "runt-cli",
+    "runt-demo",
     "runt-verifiers/hello-verifier",
     "runt-verifiers/state-verifier",
     "runt-verifiers/tx-verifier",

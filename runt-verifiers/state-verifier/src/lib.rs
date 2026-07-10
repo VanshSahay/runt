@@ -133,10 +133,9 @@ fn read_rlp_item(data: &[u8]) -> Option<(&[u8], usize)> {
         }
         return Some((&data[1 + len_of_len..1 + len_of_len + len], 1 + len_of_len + len));
     }
-    if first < 0xf8 {
-        let (payload, _consumed) = read_rlp_payload(data, 0xc0)?;
-        let total = data.len() - payload.len();
-        return Some((&data[..total], total));
+    if first < 0xff {
+        let (payload, prefix_len) = read_rlp_payload(data, 0xc0)?;
+        return Some((&data[..prefix_len + payload.len()], prefix_len + payload.len()));
     }
     None
 }

@@ -136,9 +136,8 @@ fn decode_rlp_item(data: &[u8]) -> Option<(&[u8], usize)> {
         if data.len() < 1 + len_of_len + len { return None; }
         return Some((&data[1 + len_of_len..1 + len_of_len + len], 1 + len_of_len + len));
     }
-    if first < 0xf8 {
+    if first < 0xff {
         let (payload, prefix_len) = read_rlp_payload(data, 0xc0)?;
-        let _total = data.len() - payload.len();
         return Some((&data[..prefix_len + payload.len()], prefix_len + payload.len()));
     }
     None
