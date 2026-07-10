@@ -1,10 +1,7 @@
 use std::path::Path;
 
-use crate::bindings::RuntVerifier;
-use crate::bindings::runt::verifier::verifier::VerificationStatus;
-use crate::host_impl::HostState;
 use crate::loader::VerifierLoader;
-use crate::registry::{VerifierMetadata, VerifierRegistry};
+use crate::registry::VerifierRegistry;
 use crate::VerificationResult;
 
 pub struct VerificationRouter {
