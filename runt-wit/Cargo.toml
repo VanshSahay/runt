@@ -3,4 +3,10 @@ name = "runt-wit"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "WIT interface definitions for the Runt WASM verification runtime"
+description = "WIT interface definitions and generated bindings for the Runt WASM verification runtime"
+
+[dependencies]
+wit-bindgen-rt = "0.41"
+
+[lib]
+crate-type = ["lib"]

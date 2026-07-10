@@ -6,7 +6,13 @@ license = "MIT"
 description = "Verifier WASM component for Runt"
 
 [lib]
-crate-type = ["lib", "cdylib"]
+crate-type = ["lib"]
 
 [dependencies]
-wit-bindgen = "0.57"
+runt-wit = { path = "../../runt-wit" }
+
+[package.metadata.component]
+package = "runt:verifier"
+
+[package.metadata.component.target]
+world = "runt-verifier"

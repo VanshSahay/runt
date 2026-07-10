@@ -13,3 +13,4 @@ thiserror = "2"
 tiny-keccak = { version = "2", features = ["keccak"] }
 sha3 = "0.10"
 sha2 = "0.10"
+wasmtime-wasi = "45"

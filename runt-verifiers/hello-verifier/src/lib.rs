@@ -1,11 +1,4 @@
-wit_bindgen::generate!({
-    world: "runt-verifier",
-    path: "../../runt-wit/wit",
-});
-
-use exports::runt::verifier::verifier::{
-    Guest, VerificationStatus, VerifierMetadata,
-};
+use runt_wit::{Guest, VerificationStatus, VerifierMetadata};
 
 struct HelloVerifier;
 
@@ -32,4 +25,7 @@ impl Guest for HelloVerifier {
     }
 }
 
-export!(HelloVerifier);
+runt_wit::bindings::exports::runt::verifier::verifier::__export_runt_verifier_verifier_cabi!(
+    HelloVerifier
+    with_types_in runt_wit::bindings::exports::runt::verifier::verifier
+);
