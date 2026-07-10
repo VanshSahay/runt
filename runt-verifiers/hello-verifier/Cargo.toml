@@ -3,10 +3,10 @@ name = "hello-verifier"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Hello-world verifier WASM component for Runt"
+description = "Verifier WASM component for Runt"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["lib", "cdylib"]
 
 [dependencies]
 wit-bindgen = "0.42"

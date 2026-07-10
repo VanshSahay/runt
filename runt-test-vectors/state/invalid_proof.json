@@ -1,0 +1,12 @@
+{
+    "description": "Intentionally malformed proof with invalid RLP encoding",
+    "proof_type": "state:eip1186",
+    "public_inputs": {
+        "state_root": "0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544",
+        "address": "0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb"
+    },
+    "proof": [
+        "0xdeadbeef"
+    ],
+    "expected_result": "invalid"
+}
