@@ -16,6 +16,14 @@ impl VerificationRouter {
 
     pub fn load_verifiers(&mut self, dir: &Path) -> anyhow::Result<usize> {
         let count = self.loader.scan_directory(dir)?;
+        if count > 0 {
+            let metadata_list = self.loader.extract_metadata()?;
+            for meta in metadata_list {
+                let type_id = meta.proof_type_id.clone();
+                self.registry.register(meta);
+                eprintln!("Registered verifier: {type_id}");
+            }
+        }
         Ok(count)
     }
 

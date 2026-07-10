@@ -6,6 +6,7 @@ use wasmtime::Store;
 
 use crate::bindings::RuntVerifier;
 use crate::host_impl::HostState;
+use crate::registry::VerifierMetadata;
 
 pub struct LoadedComponent {
     pub component: Component,
@@ -60,16 +61,32 @@ impl VerifierLoader {
         Ok(())
     }
 
-    pub fn instantiate(
-        &self,
-        host_state: HostState,
-        component: &Component,
-    ) -> Result<(RuntVerifier, Store<HostState>)> {
-        let mut store = Store::new(&self.engine, host_state);
-        store.set_fuel(100_000_000).ok();
-        let bindings =
-            RuntVerifier::instantiate(&mut store, component, &self.linker)?;
-        Ok((bindings, store))
+    pub fn extract_metadata(&self) -> Result<Vec<VerifierMetadata>> {
+        let mut results = Vec::new();
+        for loaded in &self.components {
+            let mut store = Store::new(&self.engine, HostState::default());
+            let bindings = RuntVerifier::instantiate(
+                &mut store,
+                &loaded.component,
+                &self.linker,
+            )?;
+            let meta = bindings
+                .runt_verifier_verifier()
+                .call_metadata(&mut store)
+                .map_err(|e| anyhow::anyhow!("failed to call metadata: {e}"))?;
+
+            results.push(VerifierMetadata {
+                proof_type_id: meta.proof_type_id,
+                version: meta.version,
+                curve: meta.curve,
+                scheme: meta.scheme,
+                supports_recursion: meta.supports_recursion,
+                trusted_setup_required: meta.trusted_setup_required,
+                max_proof_size: meta.max_proof_size,
+                description: meta.description,
+            });
+        }
+        Ok(results)
     }
 
     pub fn engine(&self) -> &wasmtime::Engine {

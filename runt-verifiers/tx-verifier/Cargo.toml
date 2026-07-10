@@ -9,6 +9,6 @@ description = "Verifier WASM component for Runt"
 crate-type = ["lib", "cdylib"]
 
 [dependencies]
-wit-bindgen = "0.42"
+wit-bindgen = "0.57"
 alloy-primitives = "0.8"
 alloy-rlp = "0.3"
