@@ -1,0 +1,12 @@
+interface host-crypto {
+    hash: func(algorithm: string, data: list<u8>) -> list<u8>;
+
+    verify-signature: func(
+        scheme: string,
+        message: list<u8>,
+        signature: list<u8>,
+        public-key: list<u8>,
+    ) -> bool;
+
+    pairing-check: func(curve: string, pairs: list<u8>) -> bool;
+}

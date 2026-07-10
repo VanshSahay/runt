@@ -1,0 +1,10 @@
+[package]
+name = "runt-core"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "WASM runtime engine for Runt — deterministic execution, fuel metering, sandboxing"
+
+[dependencies]
+wasmtime = "45"
+anyhow = "1"

@@ -1,0 +1,12 @@
+[package]
+name = "runt-host"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Host implementation for Runt — verifier registry, crypto providers, routing"
+
+[dependencies]
+runt-core = { path = "../runt-core" }
+wasmtime = "45"
+anyhow = "1"
+thiserror = "2"

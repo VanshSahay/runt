@@ -1,0 +1,16 @@
+[package]
+name = "runt-cli"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "CLI for the Runt WASM verification runtime"
+
+[[bin]]
+name = "runt"
+path = "src/main.rs"
+
+[dependencies]
+runt-host = { path = "../runt-host" }
+runt-core = { path = "../runt-core" }
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"

@@ -1,0 +1,6 @@
+[package]
+name = "runt-wit"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "WIT interface definitions for the Runt WASM verification runtime"

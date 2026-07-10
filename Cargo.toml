@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+    "runt-wit",
+    "runt-core",
+    "runt-host",
+    "runt-cli",
+    "runt-verifiers/hello-verifier",
+]
