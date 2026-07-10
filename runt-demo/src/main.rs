@@ -98,13 +98,47 @@ fn verify_live_state_proof(args: &[String]) -> anyhow::Result<()> {
     let mut inputs = state_root.to_vec();
     inputs.extend_from_slice(&key);
 
-    println!("  Account:  {address}");
-    println!("  Balance:  {} ETH", balance as f64 / 1e18);
-    println!("  Nonce:    {nonce}");
-    println!("  Proof:    {} nodes, {} bytes RLP", proof_nodes.len(), proof_bytes.len());
+    println!("  Account:    {address}");
+    println!("  Balance:    {} ETH", balance as f64 / 1e18);
+    println!("  Nonce:      {nonce}");
+    println!();
+    println!("  ── Proof Structure ──");
+    println!("  State root: 0x{}", hex::encode(state_root));
+    println!("  Account key: 0x{}", hex::encode(key));
+    println!("  Key nibbles: {}", hex::encode(bytes_to_nibbles(&key)));
+    println!();
+    println!("  Proof nodes: {} (EIP-1186 RLP-encoded trie nodes)", proof_nodes.len());
+    for (i, node) in decoded_nodes.iter().enumerate() {
+        let node_hash = keccak256(node);
+        let preview: String = hex::encode(&node[..node.len().min(16)]);
+        let node_type = match node.first() {
+            Some(&b) if b >= 0xf8 => "branch/long-list",
+            Some(&b) if b >= 0xc0 => match node[1..].iter().position(|&x| x < 0xc0).unwrap_or(0) {
+                2 => "leaf/extension",
+                17 => "branch (17 children)",
+                _ => "trie-node",
+            },
+            _ => "raw",
+        };
+        println!("    [{i}] hash=0x{}..{}  len={}  type={node_type}  data=0x{preview}...",
+            hex::encode(&node_hash[..4]),
+            hex::encode(&node_hash[28..]),
+            node.len(),
+        );
+    }
+    println!();
+    println!("  ── Verification ──");
+    println!("  Decoding RLP proof list...");
+    println!("  Building node hash map (keccak256 each node)...");
+    println!("  Walking MPT from state root 0x{}...", hex::encode(&state_root[..8]));
+    println!("  Matching nibble path against trie nodes...");
     println!();
 
+    let start = std::time::Instant::now();
     let (code, msg) = load_and_verify("state_verifier.wasm", &proof_bytes, &inputs)?;
+    let elapsed = start.elapsed();
+    println!("  Verification completed in {elapsed:.2?}");
+    println!();
     print_verdict(code, &msg);
     Ok(())
 }
@@ -225,4 +259,10 @@ fn keccak256(data: &[u8]) -> [u8; 32] {
     let mut out = [0u8; 32];
     out.copy_from_slice(&h.finalize());
     out
+}
+
+fn bytes_to_nibbles(bytes: &[u8]) -> Vec<u8> {
+    let mut n = Vec::with_capacity(bytes.len() * 2);
+    for &b in bytes { n.push(b >> 4); n.push(b & 0x0F); }
+    n
 }
