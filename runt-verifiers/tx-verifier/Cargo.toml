@@ -1,0 +1,14 @@
+[package]
+name = "tx-verifier"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Transaction inclusion and receipt proof verifier WASM component for Runt"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wit-bindgen = "0.42"
+alloy-primitives = "0.8"
+alloy-rlp = "0.3"

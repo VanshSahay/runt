@@ -6,4 +6,8 @@ members = [
     "runt-host",
     "runt-cli",
     "runt-verifiers/hello-verifier",
+    "runt-verifiers/state-verifier",
+    "runt-verifiers/tx-verifier",
+    "runt-verifiers/consensus-verifier",
+    "runt-verifiers/groth16-verifier",
 ]

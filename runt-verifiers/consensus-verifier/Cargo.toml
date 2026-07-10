@@ -1,0 +1,12 @@
+[package]
+name = "consensus-verifier"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Altair sync committee consensus proof verifier WASM component for Runt"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wit-bindgen = "0.42"
