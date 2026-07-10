@@ -1,26 +1,11 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use runt_core::StoreManager;
 use std::path::{Path, PathBuf};
-use wasmtime::component::{Component, Linker, ResourceTable};
+use wasmtime::component::{Component, HasSelf, Linker};
+use wasmtime::Store;
 
-use crate::crypto::CryptoProvider;
-use crate::storage::StorageProvider;
-
-pub struct HostState {
-    pub crypto: Box<dyn CryptoProvider>,
-    pub storage: Box<dyn StorageProvider>,
-    pub resource_table: ResourceTable,
-}
-
-impl Default for HostState {
-    fn default() -> Self {
-        Self {
-            crypto: Box::new(crate::crypto::DefaultCryptoProvider),
-            storage: Box::new(crate::storage::InMemoryStorage::new()),
-            resource_table: ResourceTable::new(),
-        }
-    }
-}
+use crate::bindings::RuntVerifier;
+use crate::host_impl::HostState;
 
 pub struct LoadedComponent {
     pub component: Component,
@@ -37,7 +22,10 @@ pub struct VerifierLoader {
 impl VerifierLoader {
     pub fn new(store_manager: StoreManager) -> Result<Self> {
         let engine = store_manager.engine().clone();
-        let linker = Linker::new(&engine);
+        let mut linker: Linker<HostState> = Linker::new(&engine);
+
+        RuntVerifier::add_to_linker::<_, HasSelf<_>>(&mut linker, |state| state)
+            .map_err(|e| anyhow::anyhow!("failed to link host imports: {e}"))?;
 
         Ok(Self {
             store_manager,
@@ -50,7 +38,7 @@ impl VerifierLoader {
     pub fn scan_directory(&mut self, dir: &Path) -> Result<usize> {
         let mut count = 0;
         for entry in std::fs::read_dir(dir)
-            .with_context(|| format!("failed to read verifier directory: {}", dir.display()))?
+            .map_err(|e| anyhow::anyhow!("failed to read directory {}: {e}", dir.display()))?
         {
             let entry = entry?;
             let path = entry.path();
@@ -72,12 +60,20 @@ impl VerifierLoader {
         Ok(())
     }
 
-    pub fn engine(&self) -> &wasmtime::Engine {
-        &self.engine
+    pub fn instantiate(
+        &self,
+        host_state: HostState,
+        component: &Component,
+    ) -> Result<(RuntVerifier, Store<HostState>)> {
+        let mut store = Store::new(&self.engine, host_state);
+        store.set_fuel(100_000_000).ok();
+        let bindings =
+            RuntVerifier::instantiate(&mut store, component, &self.linker)?;
+        Ok((bindings, store))
     }
 
-    pub fn linker(&self) -> &Linker<HostState> {
-        &self.linker
+    pub fn engine(&self) -> &wasmtime::Engine {
+        &self.engine
     }
 
     pub fn store_manager(&self) -> &StoreManager {

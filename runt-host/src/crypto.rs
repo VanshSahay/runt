@@ -1,3 +1,5 @@
+use sha3::{Digest, Keccak256};
+
 pub trait CryptoProvider: Send + Sync {
     fn hash(&self, algorithm: &str, data: &[u8]) -> Vec<u8>;
     fn verify_signature(
@@ -13,8 +15,21 @@ pub trait CryptoProvider: Send + Sync {
 pub struct DefaultCryptoProvider;
 
 impl CryptoProvider for DefaultCryptoProvider {
-    fn hash(&self, _algorithm: &str, _data: &[u8]) -> Vec<u8> {
-        vec![]
+    fn hash(&self, algorithm: &str, data: &[u8]) -> Vec<u8> {
+        match algorithm {
+            "keccak256" => {
+                let mut hasher = Keccak256::new();
+                hasher.update(data);
+                hasher.finalize().to_vec()
+            }
+            "sha256" => {
+                use sha2::Sha256;
+                let mut hasher = Sha256::new();
+                hasher.update(data);
+                hasher.finalize().to_vec()
+            }
+            _ => Vec::new(),
+        }
     }
 
     fn verify_signature(
