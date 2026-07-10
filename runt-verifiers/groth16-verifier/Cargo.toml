@@ -1,0 +1,12 @@
+[package]
+name = "groth16-verifier"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "BN254 Groth16 proof verifier WASM module for Runt"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+runt-abi = { path = "../../runt-abi" }

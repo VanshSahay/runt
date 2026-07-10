@@ -1,4 +1,4 @@
-.PHONY: all build verifiers test clean run-list run-verify
+.PHONY: all build verifiers test clean
 
 all: build verifiers
 
@@ -6,15 +6,18 @@ build:
 	cargo build --workspace
 
 verifiers:
-	cargo build --target wasm32-unknown-unknown --release -p hello-verifier
 	@mkdir -p target/verifiers
-	cp target/wasm32-unknown-unknown/release/hello_verifier.wasm target/verifiers/
+	@for v in hello-verifier state-verifier tx-verifier consensus-verifier groth16-verifier; do \
+		echo "Building $$v..."; \
+		cargo build --target wasm32-unknown-unknown --release -p $$v; \
+		cp target/wasm32-unknown-unknown/release/$$(echo $$v | tr '-' '_').wasm target/verifiers/; \
+	done
+	@echo ""
+	@echo "Verifiers built:"
+	@ls -lh target/verifiers/
 
 test:
-	cargo test -p runt-core -p runt-host -p runt-cli
-
-run-list: verifiers
-	cargo run -p runt-cli -- list
+	cargo test -p runt-core -p runt-host -p runt-cli -- --test-threads=1
 
 clean:
 	cargo clean

@@ -1,0 +1,12 @@
+[package]
+name = "tx-verifier"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Transaction receipt proof verifier WASM module for Runt"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+runt-abi = { path = "../../runt-abi" }

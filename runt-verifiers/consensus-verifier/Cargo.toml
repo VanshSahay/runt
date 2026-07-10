@@ -1,0 +1,12 @@
+[package]
+name = "consensus-verifier"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Altair sync committee light client verifier WASM module for Runt"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+runt-abi = { path = "../../runt-abi" }
