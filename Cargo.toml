@@ -1,13 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
-    "runt-wit",
+    "runt-abi",
     "runt-core",
     "runt-host",
     "runt-cli",
     "runt-verifiers/hello-verifier",
-    "runt-verifiers/state-verifier",
-    "runt-verifiers/tx-verifier",
-    "runt-verifiers/consensus-verifier",
-    "runt-verifiers/groth16-verifier",
 ]

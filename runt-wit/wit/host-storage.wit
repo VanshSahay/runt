@@ -1,5 +1,0 @@
-interface host-storage {
-    get-verification-key: func(key-id: string) -> result<list<u8>, string>;
-
-    get-public-params: func(params-id: string) -> result<list<u8>, string>;
-}

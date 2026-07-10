@@ -1,0 +1,6 @@
+[package]
+name = "runt-abi"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "C ABI constants and types for the Runt WASM verification runtime"

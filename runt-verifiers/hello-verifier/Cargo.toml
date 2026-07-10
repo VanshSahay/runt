@@ -3,16 +3,10 @@ name = "hello-verifier"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Verifier WASM component for Runt"
+description = "Hello-world verifier WASM module for Runt"
 
 [lib]
-crate-type = ["lib"]
+crate-type = ["cdylib"]
 
 [dependencies]
-runt-wit = { path = "../../runt-wit" }
-
-[package.metadata.component]
-package = "runt:verifier"
-
-[package.metadata.component.target]
-world = "runt-verifier"
+runt-abi = { path = "../../runt-abi" }

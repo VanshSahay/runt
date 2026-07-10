@@ -1,40 +1,42 @@
-use sha3::{Digest, Keccak256};
+use sha2::Digest;
+use sha3::Keccak256;
 
 pub trait CryptoProvider: Send + Sync {
-    fn hash(&self, algorithm: &str, data: &[u8]) -> Vec<u8>;
+    fn keccak256(&self, data: &[u8]) -> [u8; 32];
+    fn sha256(&self, data: &[u8]) -> [u8; 32];
     fn verify_signature(
         &self,
-        scheme: &str,
+        scheme: u32,
         message: &[u8],
         signature: &[u8],
         public_key: &[u8],
     ) -> bool;
-    fn pairing_check(&self, curve: &str, pairs: &[u8]) -> bool;
+    fn pairing_check(&self, curve: u32, pairs: &[u8]) -> bool;
 }
 
 pub struct DefaultCryptoProvider;
 
 impl CryptoProvider for DefaultCryptoProvider {
-    fn hash(&self, algorithm: &str, data: &[u8]) -> Vec<u8> {
-        match algorithm {
-            "keccak256" => {
-                let mut hasher = Keccak256::new();
-                hasher.update(data);
-                hasher.finalize().to_vec()
-            }
-            "sha256" => {
-                use sha2::Sha256;
-                let mut hasher = Sha256::new();
-                hasher.update(data);
-                hasher.finalize().to_vec()
-            }
-            _ => Vec::new(),
-        }
+    fn keccak256(&self, data: &[u8]) -> [u8; 32] {
+        let mut hasher = Keccak256::new();
+        hasher.update(data);
+        let mut out = [0u8; 32];
+        out.copy_from_slice(&hasher.finalize());
+        out
+    }
+
+    fn sha256(&self, data: &[u8]) -> [u8; 32] {
+        use sha2::Sha256;
+        let mut hasher = Sha256::new();
+        hasher.update(data);
+        let mut out = [0u8; 32];
+        out.copy_from_slice(&hasher.finalize());
+        out
     }
 
     fn verify_signature(
         &self,
-        _scheme: &str,
+        _scheme: u32,
         _message: &[u8],
         _signature: &[u8],
         _public_key: &[u8],
@@ -42,7 +44,7 @@ impl CryptoProvider for DefaultCryptoProvider {
         false
     }
 
-    fn pairing_check(&self, _curve: &str, _pairs: &[u8]) -> bool {
+    fn pairing_check(&self, _curve: u32, _pairs: &[u8]) -> bool {
         false
     }
 }

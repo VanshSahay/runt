@@ -1,88 +1,68 @@
 # Runt
 
-**Runt** is a portable, composable, deterministic, and extensible WASM verification runtime for Ethereum proofs.
-
-## Principles
-
-- **Portable**: Runs anywhere WASM runs — browser, server, edge, mobile.
-- **Composable**: Every verifier implements a common WIT interface. Verifiers can delegate to one another.
-- **Deterministic**: No networking, no hidden state, no non-deterministic floating-point in the core. Identical outputs on every architecture.
-- **Extensible**: New proof types are added by dropping a `.wasm` component file into the verifiers directory.
+Portable, composable, deterministic WASM verification runtime for Ethereum proofs.
 
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────┐
-│                   runt-cli                        │
-│         (CLI, WASI host, integration)             │
-├──────────────────────────────────────────────────┤
-│                  runt-host                        │
-│   VerifierRegistry, VerifierLoader, Capability    │
-│   Index, Dependency Graph, Host Crypto Providers  │
-├──────────────────────────────────────────────────┤
-│                  runt-wit                         │
-│   WIT definitions + wit-bindgen generated code    │
-│   Interfaces: verifier, host-crypto, host-storage │
-├──────────────────────────────────────────────────┤
-│                 runt-core                         │
-│   wasmtime engine, fuel metering, sandbox config  │
-│   Store management, epoch interruption            │
-├──────────────────────────────────────────────────┤
-│              runt-verifiers/                      │
-│   Reference WASM components implementing Verifier │
-│   ├── state-verifier   (EIP-1186 MPT)            │
-│   ├── tx-verifier      (Receipt proofs)           │
-│   ├── consensus-verifier (Altair sync committee)  │
-│   └── groth16-verifier (BN254 Groth16)            │
-└──────────────────────────────────────────────────┘
+runt-abi/          C ABI constants shared between host and verifiers
+runt-core/         wasmtime engine config, fuel metering, sandboxing
+runt-host/         Verifier registry, loader, crypto providers, routing
+runt-cli/          Command-line interface
+runt-verifiers/    WASM modules implementing the verifier C ABI
+  hello-verifier/  Reference verifier (dummy)
 ```
 
-## Verifier Interface (WIT)
+## How it works
 
-Every verifier is a WASM component that exports:
+Each verifier is a plain `.wasm` module exporting two functions:
 
-```wit
-interface verifier {
-    variant verification-status { valid, invalid(string), error(string) }
+```c
+// Write JSON metadata to buf, return bytes written
+u32 metadata(u8* buf, u32 buf_len);
 
-    record verifier-metadata {
-        proof-type-id: string,
-        version: string,
-        curve: string,
-        scheme: string,
-        %supports-recursion: bool,
-        %trusted-setup-required: bool,
-        %max-proof-size: u64,
-        description: string,
-    }
-
-    metadata: func() -> verifier-metadata;
-    verify: func(
-        proof: borrow<list<u8>>,
-        public-inputs: borrow<list<u8>>,
-        verification-key: borrow<list<u8>>
-    ) -> verification-status;
-}
+// Verify a proof. Returns 0=valid, 1=invalid, 2=error
+// Writes error details to error_buf on failure
+u32 verify(
+    u8* proof, u32 proof_len,
+    u8* public_inputs, u32 public_inputs_len,
+    u8* error_buf, u32 error_buf_len
+);
 ```
 
-Verifiers import cryptographic primitives from the host (`host-crypto`) and verification keys from `host-storage`. The sandbox never touches raw key material directly.
+Verifiers import host functions from the `"env"` module:
+
+```c
+void host_hash(u32 algorithm, u8* input, u32 input_len, u8* output);
+u32  host_verify_signature(u32 scheme, u8* msg, u32 msg_len, u8* sig, u32 sig_len, u8* pk, u32 pk_len);
+u32  host_pairing_check(u32 curve, u8* pairs, u32 pairs_len);
+```
 
 ## Quick Start
 
 ```bash
+# Build the host
 cargo build --workspace
-cargo run -- list                          # list loaded verifiers
-cargo run -- verify state proof.json       # verify an EIP-1186 state proof
+
+# Build verifier WASM modules
+make verifiers
+
+# List loaded verifiers
+cargo run -p runt-cli -- list
+
+# Verify a proof
+cargo run -p runt-cli -- verify --proof-type hello:dummy --proof-file test.json
+
+# Run tests
+make test
 ```
 
-## Verifier Types
+## Adding a new verifier
 
-| Verifier | Proof Type | Status |
-|---|---|---|
-| `state-verifier` | EIP-1186 Merkle Patricia Trie proofs | Planned |
-| `tx-verifier` | Transaction inclusion & receipt proofs | Planned |
-| `consensus-verifier` | Altair sync committee & beacon proofs | Planned |
-| `groth16-verifier` | BN254 Groth16 ZK proofs | Planned |
+1. Create a new crate in `runt-verifiers/` with `crate-type = ["cdylib"]`
+2. Export `metadata` and `verify` functions with C ABI
+3. Build with `cargo build --target wasm32-unknown-unknown --release`
+4. Drop the `.wasm` file in `target/verifiers/`
 
 ## License
 

@@ -1,16 +1,6 @@
 use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
-pub struct VerifierMetadata {
-    pub proof_type_id: String,
-    pub version: String,
-    pub curve: String,
-    pub scheme: String,
-    pub supports_recursion: bool,
-    pub trusted_setup_required: bool,
-    pub max_proof_size: u64,
-    pub description: String,
-}
+use crate::types::VerifierMetadata;
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub struct CapabilityKey {
@@ -19,14 +9,14 @@ pub struct CapabilityKey {
 }
 
 pub struct VerifierRegistry {
-    metadata: HashMap<String, VerifierMetadata>,
+    entries: HashMap<String, VerifierMetadata>,
     capability_index: HashMap<CapabilityKey, Vec<String>>,
 }
 
 impl VerifierRegistry {
     pub fn new() -> Self {
         Self {
-            metadata: HashMap::new(),
+            entries: HashMap::new(),
             capability_index: HashMap::new(),
         }
     }
@@ -43,7 +33,6 @@ impl VerifierRegistry {
                 },
             );
         }
-
         if !metadata.scheme.is_empty() {
             self.index_capability(
                 &type_id,
@@ -54,7 +43,7 @@ impl VerifierRegistry {
             );
         }
 
-        self.metadata.insert(type_id, metadata);
+        self.entries.insert(type_id, metadata);
     }
 
     fn index_capability(&mut self, type_id: &str, key: CapabilityKey) {
@@ -65,11 +54,11 @@ impl VerifierRegistry {
     }
 
     pub fn get(&self, proof_type_id: &str) -> Option<&VerifierMetadata> {
-        self.metadata.get(proof_type_id)
+        self.entries.get(proof_type_id)
     }
 
     pub fn list(&self) -> Vec<&VerifierMetadata> {
-        self.metadata.values().collect()
+        self.entries.values().collect()
     }
 
     pub fn find_by_capability(&self, category: &str, value: &str) -> Vec<&VerifierMetadata> {
@@ -79,20 +68,16 @@ impl VerifierRegistry {
         };
         self.capability_index
             .get(&key)
-            .map(|ids| {
-                ids.iter()
-                    .filter_map(|id| self.metadata.get(id))
-                    .collect()
-            })
+            .map(|ids| ids.iter().filter_map(|id| self.entries.get(id)).collect())
             .unwrap_or_default()
     }
 
     pub fn len(&self) -> usize {
-        self.metadata.len()
+        self.entries.len()
     }
 
     pub fn is_empty(&self) -> bool {
-        self.metadata.is_empty()
+        self.entries.is_empty()
     }
 }
 

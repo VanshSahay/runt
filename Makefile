@@ -1,4 +1,4 @@
-.PHONY: all build verifiers test clean
+.PHONY: all build verifiers test clean run-list run-verify
 
 all: build verifiers
 
@@ -6,20 +6,15 @@ build:
 	cargo build --workspace
 
 verifiers:
-	@echo "Building verifier WASM components..."
 	cargo build --target wasm32-unknown-unknown --release -p hello-verifier
 	@mkdir -p target/verifiers
-	wasm-tools component new \
-		target/wasm32-unknown-unknown/release/hello_verifier.wasm \
-		--adapt default \
-		-o target/verifiers/hello-verifier.wasm 2>/dev/null || \
-	wasm-tools component embed runt-wit/wit \
-		target/wasm32-unknown-unknown/release/hello_verifier.wasm \
-		-o target/verifiers/hello-verifier.wasm
-	@echo "Verifier components built in target/verifiers/"
+	cp target/wasm32-unknown-unknown/release/hello_verifier.wasm target/verifiers/
 
 test:
-	cargo test --workspace
+	cargo test -p runt-core -p runt-host -p runt-cli
+
+run-list: verifiers
+	cargo run -p runt-cli -- list
 
 clean:
 	cargo clean
